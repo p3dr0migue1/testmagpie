@@ -1,0 +1,12 @@
+{
+    "rows": [
+        {
+            "keys": ["ee"],
+            "impressions": 1916834.0,
+            "clicks": 532218.0,
+            "ctr": 0.2776547160578329,
+            "position": 1.05003093642955
+        }
+    ],
+    "responseAggregationType": "byProperty"
+}
