@@ -72,27 +72,27 @@ class TestSearchConsoleApi(unittest.TestCase):
         self.assertIsInstance(returned_data[0]['SuperClicks'], str)
         self.assertIsInstance(returned_data[0]['CrazyClicks'], str)
 
-    # def test_set_date_range(self):
-    #     # get the path to the right fixture
-    #     fixture = os.path.join(self.fixture_dir, 'set_date_range_fixture.json')
+    def test_set_date_range(self):
+        # get the path to the right fixture
+        fixture = os.path.join(self.fixture_dir, 'set_date_range_fixture.json')
 
-    #     http_auth = http.HttpMock(fixture, {'status': '200'})
-    #     service = discovery.build('webmasters', 'v3', http=http_auth)
+        http_auth = http.HttpMock(fixture, {'status': '200'})
+        service = discovery.build('webmasters', 'v3', http=http_auth)
 
-    #     returned_data = set_date_range(service)
-    #     expected_data = [
-    #         (u'2015-08-31', u'2015-09-29'),
-    #         (u'2015-09-30', u'2015-10-29'),
-    #         (u'2015-10-30', u'2015-11-30')
-    #     ]
-    #     for tpl in returned_data:
-    #         self.assertIsInstance(tpl, tuple)
-    #         for item in tpl:
-    #             self.assertIsInstance(
-    #                 datetime.datetime.strptime(item, '%Y-%m-%d'),
-    #                 datetime.datetime
-    #             )
-    #     self.assertEqual(returned_data, expected_data)
+        returned_data = set_date_range(service)
+        expected_data = [
+            (u'2015-08-31', u'2015-09-29'),
+            (u'2015-09-30', u'2015-10-29'),
+            (u'2015-10-30', u'2015-11-30')
+        ]
+        for tpl in returned_data:
+            self.assertIsInstance(tpl, tuple)
+            for item in tpl:
+                self.assertIsInstance(
+                    datetime.datetime.strptime(item, '%Y-%m-%d'),
+                    datetime.datetime
+                )
+        self.assertEqual(returned_data, expected_data)
 
     def test_row_builder_with_empty_list_data(self):
         returned_data = row_builder(
@@ -106,14 +106,14 @@ class TestSearchConsoleApi(unittest.TestCase):
 
         self.assertEqual(returned_data, self.list_metrics)
 
-    # def test_query_search_console_data(self):
-    #     fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
+    def test_query_search_console_data(self):
+        fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
 
-    #     http_auth = http.HttpMock(fixture, {'status': '200'})
-    #     service = discovery.build('webmasters', 'v3', http=http_auth)
-    #     returned_data = query_search_console_data(self.dates, service)
+        http_auth = http.HttpMock(fixture, {'status': '200'})
+        service = discovery.build('webmasters', 'v3', http=http_auth)
+        returned_data = query_search_console_data(self.dates, service)
 
-    #     self.assertEqual(returned_data, self.list_metrics)
+        self.assertEqual(returned_data, self.list_metrics)
 
     def test_write_data_to_csv(self):
         list_data = [
