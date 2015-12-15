@@ -6,6 +6,7 @@ import datetime
 from apiclient import discovery
 from apiclient import http
 
+from metrics_app.settings.base import CLIENT_SECRET
 from metrics_app.metrics_collector import (row_builder,
                                            write_to_csv,
                                            set_date_range,
@@ -109,6 +110,11 @@ class TestSearchConsoleApi(unittest.TestCase):
     def test_query_search_console_data(self):
         fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
 
+        import sys
+        print fixture
+        sys.stdout.flush()
+        print CLIENT_SECRET
+        sys.stdout.flush()
         http_auth = http.HttpMock(fixture, {'status': '200'})
         service = discovery.build('webmasters', 'v3', http=http_auth)
         returned_data = query_search_console_data(self.dates, service)
