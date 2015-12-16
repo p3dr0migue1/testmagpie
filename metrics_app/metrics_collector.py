@@ -1,6 +1,7 @@
 import argparse
 import csv
 import httplib2
+import logging
 
 from apiclient import discovery
 from oauth2client import client
@@ -8,6 +9,9 @@ from oauth2client.file import Storage
 from oauth2client import tools
 
 from settings import base
+
+
+logging.basicConfig()
 
 
 def execute_request(service, client_url, request):
@@ -66,6 +70,7 @@ def set_date_range(service):
     request_body = {'startDate': base.START_DATE,
                     'endDate': base.END_DATE,
                     'dimensions': ['date']}
+
     response = execute_request(service, base.CLIENT_URL, request_body)
 
     for row in response['rows']:
@@ -174,7 +179,7 @@ def encode_dict_reader(data):
 def main():
     credentials = get_credentials()
     http_auth = credentials.authorize(httplib2.Http())
-    service = discovery.build('webmasters', 'v3', http_auth)
+    service = discovery.build('webmasters', 'v3', http=http_auth)
     query_dates = set_date_range(service)
     api_data = query_search_console_data(query_dates, service)
     encoded_csv_data = encode_dict_reader(api_data)

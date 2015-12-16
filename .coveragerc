@@ -1,0 +1,16 @@
+
+# .coveragerc to control coverage.py
+[run]
+# branch = True
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def main
+    def get_credentials
+    if __name__ == .__main__.:
+
+ignore_errors = True
+
+[html]
+directory = coverage_html_report

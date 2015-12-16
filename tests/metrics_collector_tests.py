@@ -3,10 +3,10 @@ import csv
 import unittest
 import datetime
 
-from apiclient import discovery
-from apiclient import http
+from apiclient.discovery import build
+from apiclient.http import HttpMockSequence
 
-from metrics_app.settings.base import CLIENT_SECRET
+from metrics_app.settings import base
 from metrics_app.metrics_collector import (row_builder,
                                            write_to_csv,
                                            set_date_range,
@@ -42,9 +42,12 @@ class TestSearchConsoleApi(unittest.TestCase):
             }
         ]
 
-        self.fixture_dir = os.path.dirname(os.path.realpath(__file__))
+        self.DATA_DIR = os.path.dirname(os.path.realpath(__file__))
         # create csv file
         self.csv_file = os.path.join('csv_test_file.csv')
+
+    def datafile(self, filename):
+        return os.path.join(self.DATA_DIR, filename)
 
     def tearDown(self):
         # remove csv file
@@ -74,17 +77,25 @@ class TestSearchConsoleApi(unittest.TestCase):
         self.assertIsInstance(returned_data[0]['CrazyClicks'], str)
 
     def test_set_date_range(self):
-        # get the path to the right fixture
-        fixture = os.path.join(self.fixture_dir, 'set_date_range_fixture.json')
-
-        http_auth = http.HttpMock(fixture, {'status': '200'})
-        service = discovery.build('webmasters', 'v3', http=http_auth)
-
+        base.CLIENT_URL = 'www.example.com'
+        base.START_DATE = '2015-09-11'
+        base.END_DATE = '2015-12-12'
+        build_response_data = self.datafile('set_date_range_fixture.json')
+        request_data = self.datafile('query_data_fixture.json')
+        http_auth = HttpMockSequence([
+            ({'status': '200'}, open(build_response_data, 'rb').read()),
+            ({'status': '200'}, open(request_data, 'rb').read())
+        ])
+        service = build('webmasters',
+                        'v3',
+                        http=http_auth,
+                        cache_discovery=False)
         returned_data = set_date_range(service)
+
         expected_data = [
-            (u'2015-08-31', u'2015-09-29'),
-            (u'2015-09-30', u'2015-10-29'),
-            (u'2015-10-30', u'2015-11-30')
+            (u'2015-09-11', u'2015-10-10'),
+            (u'2015-10-11', u'2015-11-09'),
+            (u'2015-11-10', u'2015-12-12')
         ]
         for tpl in returned_data:
             self.assertIsInstance(tpl, tuple)
@@ -107,19 +118,14 @@ class TestSearchConsoleApi(unittest.TestCase):
 
         self.assertEqual(returned_data, self.list_metrics)
 
-    def test_query_search_console_data(self):
-        fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
+    # def test_query_search_console_data(self):
+    #     fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
 
-        import sys
-        print fixture
-        sys.stdout.flush()
-        print CLIENT_SECRET
-        sys.stdout.flush()
-        http_auth = http.HttpMock(fixture, {'status': '200'})
-        service = discovery.build('webmasters', 'v3', http=http_auth)
-        returned_data = query_search_console_data(self.dates, service)
+    #     http_auth = http.HttpMock(fixture, {'status': '200'})
+    #     service = discovery.build('webmasters', 'v3', http=http_auth)
+    #     returned_data = query_search_console_data(self.dates, service)
 
-        self.assertEqual(returned_data, self.list_metrics)
+    #     self.assertEqual(returned_data, self.list_metrics)
 
     def test_write_data_to_csv(self):
         list_data = [
