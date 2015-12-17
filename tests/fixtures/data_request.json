@@ -1,0 +1,13 @@
+{
+    "rows": [
+        {
+            "keys": ["www.example.com"],
+            "impressions": 1905291.0,
+            "clicks": 498250.0,
+            "ctr": 0.2615086094460111,
+            "position": 1.048671830182371
+        }
+    ],
+    "responseAggregationType": "byProperty"
+}
+

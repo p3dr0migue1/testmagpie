@@ -17,32 +17,43 @@ from metrics_app.metrics_collector import (row_builder,
 class TestSearchConsoleApi(unittest.TestCase):
 
     def setUp(self):
-        self.dates = [('2015-08-31', '2015-09-01')]
-        self.response = {
+        self.dates = [
+            (u'2015-09-11', u'2015-10-10'),
+            (u'2015-10-11', u'2015-11-09'),
+            (u'2015-11-10', u'2015-12-12')
+        ]
+        self.request_data = {
             u'rows': [
                 {
-                    u'keys': [u'ee'],
-                    u'impressions': 1916834.0,
-                    u'clicks': 532218.0,
-                    u'ctr': 0.2776547160578329,
-                    u'position': 1.05003093642955
+                    u'keys': [u'www.simpleexample.com'],
+                    u'impressions': 1905291.0,
+                    u'clicks': 498250.0,
+                    u'ctr': 0.2615086094460111,
+                    u'position': 1.048671830182371
                 }
             ],
             u'responseAggregationType': u'byProperty'
         }
-
         self.list_metrics = [
             {
-                'CTR': 0.2776547160578329,
-                'Clicks': 532218.0,
-                'Date Range': ('2015-08-31', '2015-09-01'),
-                'Phrase': u'ee',
-                'Impressions': 1916834.0,
-                'Av Position': 1.05003093642955
+                'CTR': 0.2615086094460111,
+                'Clicks': 498250.0,
+                'Date Range': u'2015-09-11',
+                'Phrase': u'www.example.com',
+                'Impressions': 1905291.0,
+                'Av Position': 1.048671830182371
+            },
+            {
+                'CTR': 0.2615086094460111,
+                'Clicks': 498250.0,
+                'Date Range': u'2015-10-10',
+                'Phrase': u'www.example.com',
+                'Impressions': 1905291.0,
+                'Av Position': 1.048671830182371
             }
         ]
-
-        self.DATA_DIR = os.path.dirname(os.path.realpath(__file__))
+        self.DATA_DIR = os.path.join(
+            os.path.dirname(os.path.realpath(__file__)), 'fixtures')
         # create csv file
         self.csv_file = os.path.join('csv_test_file.csv')
 
@@ -80,8 +91,8 @@ class TestSearchConsoleApi(unittest.TestCase):
         base.CLIENT_URL = 'www.example.com'
         base.START_DATE = '2015-09-11'
         base.END_DATE = '2015-12-12'
-        build_response_data = self.datafile('set_date_range_fixture.json')
-        request_data = self.datafile('query_data_fixture.json')
+        build_response_data = self.datafile('response_data.json')
+        request_data = self.datafile('date_range_request.json')
         http_auth = HttpMockSequence([
             ({'status': '200'}, open(build_response_data, 'rb').read()),
             ({'status': '200'}, open(request_data, 'rb').read())
@@ -92,11 +103,6 @@ class TestSearchConsoleApi(unittest.TestCase):
                         cache_discovery=False)
         returned_data = set_date_range(service)
 
-        expected_data = [
-            (u'2015-09-11', u'2015-10-10'),
-            (u'2015-10-11', u'2015-11-09'),
-            (u'2015-11-10', u'2015-12-12')
-        ]
         for tpl in returned_data:
             self.assertIsInstance(tpl, tuple)
             for item in tpl:
@@ -104,28 +110,71 @@ class TestSearchConsoleApi(unittest.TestCase):
                     datetime.datetime.strptime(item, '%Y-%m-%d'),
                     datetime.datetime
                 )
-        self.assertEqual(returned_data, expected_data)
+        self.assertEqual(returned_data, self.dates)
 
     def test_row_builder_with_empty_list_data(self):
-        returned_data = row_builder(
-            self.response, self.dates[0], [])
-
-        self.assertEqual(returned_data, self.list_metrics)
+        expected = [
+            {
+                'CTR': 0.2615086094460111,
+                'Clicks': 498250.0,
+                'Date Range': u'2015-09-11',
+                'Phrase': u'www.simpleexample.com',
+                'Impressions': 1905291.0,
+                'Av Position': 1.048671830182371
+            }
+        ]
+        returned_data = row_builder(self.request_data, u'2015-09-11', [])
+        self.assertEqual(returned_data, expected)
 
     def test_row_builder_with_duplicate_list_data(self):
+        list_data = [
+            {
+                'CTR': 0.2615086094460111,
+                'Clicks': 498250.0,
+                'Date Range': u'2015-09-11',
+                'Phrase': u'www.simpleexample.com',
+                'Impressions': 1905291.0,
+                'Av Position': 1.048671830182371
+            }
+        ]
         returned_data = row_builder(
-            self.response, self.dates[0], self.list_metrics)
+            self.request_data, u'2015-09-11', list_data)
 
+        self.assertEqual(returned_data, list_data)
+
+    def test_query_search_console_data(self):
+        base.CLIENT_URL = 'www.example.com'
+        # Because the query_search_console function loops through all
+        # the items in the IGNORE list (there are 74 items in the list) and
+        # executes a request on each loop (148 requests total).
+        #
+        # This means that we would need to create 148 Mock json request
+        # objects to represent each of the 148 requests executed.
+        # (more info regarding HtppMocksequence:
+        # https://developers.google.com/api-client-library/python/guide/mocks#example_1)
+        #
+        # As an alternative we can override the contents of the IGNORE list
+        base.IGNORE = ['0']
+        build_response_data = self.datafile('response_data.json')
+        request_data = open(self.datafile('data_request.json'), 'rb').read()
+
+        # duplicate the json request objects
+        request_data1 = request_data
+        request_data2 = request_data
+
+        http_auth = HttpMockSequence([
+            ({'status': '200'}, open(build_response_data, 'rb').read()),
+            ({'status': '200'}, request_data1),
+            ({'status': '200'}, request_data2)
+        ])
+        service = build(
+            'webmasters',
+            'v3',
+            http=http_auth,
+            cache_discovery=False
+        )
+        returned_data = query_search_console_data(self.dates[0], service)
         self.assertEqual(returned_data, self.list_metrics)
-
-    # def test_query_search_console_data(self):
-    #     fixture = os.path.join(self.fixture_dir, 'query_data_fixture.json')
-
-    #     http_auth = http.HttpMock(fixture, {'status': '200'})
-    #     service = discovery.build('webmasters', 'v3', http=http_auth)
-    #     returned_data = query_search_console_data(self.dates, service)
-
-    #     self.assertEqual(returned_data, self.list_metrics)
 
     def test_write_data_to_csv(self):
         list_data = [

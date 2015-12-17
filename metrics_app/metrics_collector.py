@@ -106,24 +106,25 @@ def query_search_console_data(query_dates, service):
                           'expression': character}]}
                 ],
                 'rowLimit': 1}
-            response = execute_request(service,
-                                       base.CLIENT_URL,
-                                       request_body)
-            metrics_list = row_builder(response, date, list_data)
+            request_data = execute_request(
+                service, base.CLIENT_URL, request_body
+            )
+            metrics_list = row_builder(request_data, date, list_data)
+
     return metrics_list
 
 
-def row_builder(response, date, list_data):
+def row_builder(request_data, date, list_data):
     """
     Creates a dictionary and appends to a list
 
-    :param response:     a list of dictionaries
-    :param data:         a tuple of date strings yyyy-mm-dd
-    :param list_data:    a list to write the dictionary too
+    :param request_data:     a list of dictionaries
+    :param data:             a tuple of date strings yyyy-mm-dd
+    :param list_data:        a list to write the dictionary too
 
     :returns list_data:  returns a list of dictionaries
     """
-    for row in response['rows']:
+    for row in request_data['rows']:
         new_row = {
             'Date Range': date,
             'Phrase': row['keys'][0],
