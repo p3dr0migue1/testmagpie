@@ -18,7 +18,7 @@ class TestSearchConsoleApi(unittest.TestCase):
 
     def setUp(self):
         self.dates = [
-            (u'2015-09-11', u'2015-10-10'),
+            (u'2015-09-11', u'2015-10-11'),
             (u'2015-10-11', u'2015-11-09'),
             (u'2015-11-10', u'2015-12-12')
         ]
