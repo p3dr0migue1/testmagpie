@@ -1,4 +1,4 @@
-####Status [![Build Status](http://194.168.11.234:9090/job/testExample/badge/icon)](http://194.168.11.234:9090/job/testExample)
+#### Master Status [![Build Status](http://194.168.11.234:9090/job/testExample/badge/icon)](http://194.168.11.234:9090/job/testExample)
 # search_console
 Search Console API - Data collection and warehousing
 
